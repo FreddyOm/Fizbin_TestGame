@@ -33,17 +33,22 @@ public class PlayerMovement : MonoBehaviour
     public float walkAcceleration = 20f;
     [Tooltip("The acceleration of the player when running.")]
     public float runAcceleration = 7f;
+    [Tooltip("The maximum velocity, the player can have, when walking.")]
     public float maxPlayerWalkVelocity = 3f;
+    [Tooltip("The maximum velocity, the player can have, when running.")]
     public float maxPlayerRunVelocity = 4f;
+    [Tooltip("The maximum velocity cahnge that should be applied.")]
     public float maxDecelerationDelta = .2f;
     bool isRunning = false;
     float horizontalMovement = 0;
     [Header("Jumping")]
+    [Tooltip("When true, player can jump. When false, player cannot jump.")]
     public bool canJump = true;
+    [Tooltip("The force applied to the player in vertical direction when jumping.")]
     public float jumpForce = 10f;
     bool isGrounded = false;
 
-
+    //Start
     void Start()
     {
         playerRigidbody = this.GetComponent<Rigidbody2D>();
@@ -72,6 +77,7 @@ public class PlayerMovement : MonoBehaviour
         }
         else if (horizontalMovement == 0 && isGrounded)
         {
+            //Decelerate if there is no input
             Decelerate();
         }
     }
@@ -86,6 +92,7 @@ public class PlayerMovement : MonoBehaviour
             Jump();
         }
 
+        //Check for horizontal movement
         if (Input.GetKey(keyCodes[(int)InputKeys.left]) && isGrounded)
         {
             //Move left
@@ -110,6 +117,8 @@ public class PlayerMovement : MonoBehaviour
                 movement += runAcceleration;
             }
         }
+
+        //Check if user pressed the key associated with "run"
         if (Input.GetKey(keyCodes[(int)InputKeys.run]) && isGrounded)
         {
             //Run
@@ -119,16 +128,18 @@ public class PlayerMovement : MonoBehaviour
             isRunning = false;
         }
 
+        //Set new horizontal movement value
         horizontalMovement = movement;
 
     }
 
+    //Move current horizontal velocity to zero
     void Decelerate()
     {
         playerRigidbody.velocity = new Vector2(Mathf.MoveTowards(playerRigidbody.velocity.x, 0, maxDecelerationDelta), playerRigidbody.velocity.y);
     }
 
-
+    //Reset vertical player velocity and add vrtical force for jumping
     void Jump()
     {
         //Jump
