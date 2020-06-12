@@ -66,20 +66,7 @@ public class PlayerMovement : MonoBehaviour
     //Movement and Deceleration
     private void FixedUpdate()
     {
-        //horizontalMovement without running
-        if(horizontalMovement != 0 && isGrounded && !isRunning && Mathf.Abs(playerRigidbody.velocity.x) < maxPlayerWalkVelocity)
-        {
-            playerRigidbody.AddForce(new Vector2(horizontalMovement * Time.fixedDeltaTime * 100, 0), ForceMode2D.Force);
-        }
-        else if (horizontalMovement != 0 && isGrounded && isRunning && Mathf.Abs(playerRigidbody.velocity.x) < maxPlayerRunVelocity)
-        {
-            playerRigidbody.AddForce(new Vector2(horizontalMovement * Time.fixedDeltaTime * 100, 0), ForceMode2D.Force);
-        }
-        else if (horizontalMovement == 0 && isGrounded)
-        {
-            //Decelerate if there is no input
-            Decelerate();
-        }
+        MovePlayer();
     }
     public void InputDetection()
     {
@@ -133,6 +120,26 @@ public class PlayerMovement : MonoBehaviour
 
     }
 
+
+    void MovePlayer()
+    {
+        //horizontalMovement without running
+        if (horizontalMovement != 0 && isGrounded && !isRunning && Mathf.Abs(playerRigidbody.velocity.x) < maxPlayerWalkVelocity)
+        {
+            playerRigidbody.AddForce(new Vector2(horizontalMovement * Time.fixedDeltaTime * 100, 0), ForceMode2D.Force);
+        }
+        else if (horizontalMovement != 0 && isGrounded && isRunning && Mathf.Abs(playerRigidbody.velocity.x) < maxPlayerRunVelocity)
+        {
+            playerRigidbody.AddForce(new Vector2(horizontalMovement * Time.fixedDeltaTime * 100, 0), ForceMode2D.Force);
+        }
+        else if (horizontalMovement == 0 && isGrounded)
+        {
+            //Decelerate if there is no input
+            Decelerate();
+        }
+    }
+
+
     //Move current horizontal velocity to zero
     void Decelerate()
     {
@@ -165,4 +172,14 @@ public class PlayerMovement : MonoBehaviour
             isGrounded = false;
         }
     }
+
+    /*
+     * Alternativ hätte ich den Ground-Check mit "Physics.OverlapSphere()" ausführen können, dadurch
+     * wäre der Layer "Ground" nicht mehr nötig, und man müsste auch nicht neue Objekte mit dem Layer markieren.
+     * Jedoch kann es passieren, dass bei ungenauer Einstellung der Position der "OverlapSphere" eine Game-Breaking 
+     * Condition entsteht, die keine Inputs mehr zulässt. Außerdem müssten auch hier die entsprechenden "Ground-Objekte"
+     * einen einheitlichen Tag/Layer/Namen bekommen, weshalb ich mich hier für die Collision-Variante entschieden habe.
+     */
+
+
 }
