@@ -27,6 +27,7 @@ public class PlayerMovement : MonoBehaviour
 
     // Variables
     private Rigidbody2D playerRigidbody;
+    private Animator animator;
     protected int groundLayer = 8;
     [Header("Movement")]
     [Tooltip("The acceleration of the player when walking.")]
@@ -36,7 +37,7 @@ public class PlayerMovement : MonoBehaviour
     [Tooltip("The maximum velocity, the player can have, when walking.")]
     public float maxPlayerWalkVelocity = 3f;
     [Tooltip("The maximum velocity, the player can have, when running.")]
-    public float maxPlayerRunVelocity = 4f;
+    public float maxPlayerRunVelocity = 5f;
     [Tooltip("The maximum velocity cahnge that should be applied.")]
     public float maxDecelerationDelta = .2f;
     bool isRunning = false;
@@ -52,6 +53,7 @@ public class PlayerMovement : MonoBehaviour
     void Start()
     {
         playerRigidbody = this.GetComponent<Rigidbody2D>();
+        animator = this.GetComponent<Animator>();
     }
 
     // Read Inputs every frame
@@ -67,6 +69,7 @@ public class PlayerMovement : MonoBehaviour
     private void FixedUpdate()
     {
         MovePlayer();
+        FlipSprite();
     }
     public void InputDetection()
     {
@@ -127,10 +130,17 @@ public class PlayerMovement : MonoBehaviour
         if (horizontalMovement != 0 && isGrounded && !isRunning && Mathf.Abs(playerRigidbody.velocity.x) < maxPlayerWalkVelocity)
         {
             playerRigidbody.AddForce(new Vector2(horizontalMovement * Time.fixedDeltaTime * 100, 0), ForceMode2D.Force);
+            animator.SetBool("isWalking", true);
         }
         else if (horizontalMovement != 0 && isGrounded && isRunning && Mathf.Abs(playerRigidbody.velocity.x) < maxPlayerRunVelocity)
         {
             playerRigidbody.AddForce(new Vector2(horizontalMovement * Time.fixedDeltaTime * 100, 0), ForceMode2D.Force);
+            animator.SetBool("isWalking", true);
+
+            /*
+             * Leider hat der verwendete Charakter aus dem Unity Asset Store keine "Run-Animation" (genauer: keine Walk-Animation).
+             * Dennoch wird hier natürlich eine erhöhte Geschwindigkeit verwendet.
+             */
         }
         else if (horizontalMovement == 0 && isGrounded)
         {
@@ -144,16 +154,30 @@ public class PlayerMovement : MonoBehaviour
     void Decelerate()
     {
         playerRigidbody.velocity = new Vector2(Mathf.MoveTowards(playerRigidbody.velocity.x, 0, maxDecelerationDelta), playerRigidbody.velocity.y);
+        animator.SetBool("isWalking", false);
     }
 
     //Reset vertical player velocity and add vrtical force for jumping
     void Jump()
     {
         //Jump
+        animator.SetBool("isJumping", true);
         playerRigidbody.velocity = new Vector2(playerRigidbody.velocity.x, 0);
         playerRigidbody.AddForce(new Vector2(0, jumpForce), ForceMode2D.Impulse);
     }
 
+    //Flip the Character to face the moving direction
+    void FlipSprite()
+    {
+        if(horizontalMovement > 0)
+        {
+            transform.localScale = new Vector3(-1, transform.localScale.y, transform.localScale.z);
+        }
+        if(horizontalMovement < 0)
+        {
+            transform.localScale = new Vector3(1, transform.localScale.y, transform.localScale.z);
+        }
+    }
 
     //Checks, if player is on the ground
     private void OnCollisionStay2D(Collision2D collision)
@@ -161,6 +185,7 @@ public class PlayerMovement : MonoBehaviour
         if(collision.transform.gameObject.layer == groundLayer)
         {
             isGrounded = true;
+            animator.SetBool("isJumping", false);
         }
     }
 
